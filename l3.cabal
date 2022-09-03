@@ -25,7 +25,10 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      CoreL3.AST
+      CPS.AST
+      Frontend.AST
+      Frontend.Parser
   other-modules:
       Paths_l3
   hs-source-dirs:
@@ -34,11 +37,14 @@ library
       base >=4.7 && <5
     , diagnose ==2.0.0
     , megaparsec ==9.2.1
+    , optparse-applicative ==0.17.0.0
+    , text ==1.2.5.0
   default-language: Haskell2010
 
 executable l3-exe
   main-is: Main.hs
   other-modules:
+      CLI
       Paths_l3
   hs-source-dirs:
       app
@@ -48,6 +54,8 @@ executable l3-exe
     , diagnose ==2.0.0
     , l3
     , megaparsec ==9.2.1
+    , optparse-applicative ==0.17.0.0
+    , text ==1.2.5.0
   default-language: Haskell2010
 
 test-suite l3-test
@@ -63,4 +71,6 @@ test-suite l3-test
     , diagnose ==2.0.0
     , l3
     , megaparsec ==9.2.1
+    , optparse-applicative ==0.17.0.0
+    , text ==1.2.5.0
   default-language: Haskell2010
