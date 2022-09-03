@@ -4,6 +4,10 @@ import Data.Text (Text)
 
 type Ident = Text
 
+data Program 
+  = PDefinition Definition Expr
+  | PExpr Expr Expr
+
 data Definition
   = Def Ident Expr
   | DefRec Ident Fun
