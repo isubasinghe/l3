@@ -27,6 +27,12 @@ symbol = L.symbol sc
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
 
+atLeast :: Int -> Parser a -> Parser [a]
+atLeast n p = do
+  xs <- count n p
+  xs' <- many p
+  pure $ xs ++ xs'
+
 rws :: [Text]
 rws =
   [ "defrec",
@@ -123,17 +129,20 @@ pif = parens $ do
 pcond :: Parser A.Cond
 pcond = parens $ do
   _ <- C.space *> C.string "cond"
+  es <- C.space *> parens (count 2 (C.space *> pexpr))
   undefined
 
 pand :: Parser A.And
 pand = parens $ do
   _ <- C.space *> C.string "and"
-  undefined
+  es <- atLeast 2 (C.space *> pexpr)
+  pure $ A.And es
 
 por :: Parser A.Or
 por = parens $ do
   _ <- C.space *> C.string "or"
-  undefined
+  es <- atLeast 2 (C.space *> pexpr)
+  pure $ A.Or es
 
 pnot :: Parser A.Not
 pnot = parens $ do

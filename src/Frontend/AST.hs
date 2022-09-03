@@ -27,10 +27,10 @@ data If = If
 data Cond = Cond
   deriving (Show, Eq)
 
-data And = And
+data And = And [Expr]
   deriving (Show, Eq)
 
-data Or = Or
+data Or = Or [Expr]
   deriving (Show, Eq)
 
 data Not = Not Expr
