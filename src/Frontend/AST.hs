@@ -5,26 +5,29 @@ import Data.Text (Text)
 type Ident = Text
 
 data Definition
-  = Def
-  | DefRec
+  = Def Ident Expr
+  | DefRec Ident Fun
   deriving (Show, Eq)
 
-data Fun = Fun
+data Fun = Fun [Ident] [Expr]
   deriving (Show, Eq)
 
-data Let = Let
+data Let 
+  = Let [(Ident, Expr)] [Expr]
+  | LetStar [(Ident, Expr)] [Expr]
+  | LetRec [(Ident, Fun)] [Expr]
   deriving (Show, Eq)
 
-data Rec = Rec
+data Rec = Rec Ident [(Ident, Expr)] [Expr]
   deriving (Show, Eq)
 
-data Begin = Begin
+data Begin = Begin [Expr]
   deriving (Show, Eq)
 
-data If = If
+data If = If Expr Expr (Maybe Expr)
   deriving (Show, Eq)
 
-data Cond = Cond
+data Cond = Cond [(Expr, [Expr])]
   deriving (Show, Eq)
 
 data And = And [Expr]

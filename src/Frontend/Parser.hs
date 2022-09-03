@@ -33,6 +33,12 @@ atLeast n p = do
   xs' <- many p
   pure $ xs ++ xs'
 
+pAsTuples :: Parser a -> Parser [a] -> Parser (a, [a])
+pAsTuples p1 p2 = do
+  out1 <- p1
+  out2 <- p2
+  pure $ (out1, out2)
+
 rws :: [Text]
 rws =
   [ "defrec",
@@ -119,18 +125,22 @@ prec = parens $ do
 pbegin :: Parser A.Begin
 pbegin = parens $ do
   _ <- C.space *> C.string "begin"
-  undefined
+  es <- many (C.space *> pexpr)
+  pure $ A.Begin es
 
 pif :: Parser A.If
 pif = parens $ do
   _ <- C.space *> C.string "if"
-  undefined
+  e1 <- C.space *> pexpr
+  e2 <- C.space *> pexpr
+  maybeE <- optional (C.space *> pexpr)
+  pure $ A.If e1 e2 maybeE
 
 pcond :: Parser A.Cond
 pcond = parens $ do
   _ <- C.space *> C.string "cond"
-  es <- C.space *> parens (count 2 (C.space *> pexpr))
-  undefined
+  es <- many $ parens (pAsTuples (C.space *> pexpr) (many $ C.space *> pexpr))
+  pure $ A.Cond es
 
 pand :: Parser A.And
 pand = parens $ do
