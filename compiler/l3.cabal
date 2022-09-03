@@ -28,6 +28,7 @@ library
       CoreL3.AST
       CPS.AST
       Frontend.AST
+      Frontend.Desugar
       Frontend.Parser
   other-modules:
       Paths_l3
