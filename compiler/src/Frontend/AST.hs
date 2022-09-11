@@ -31,7 +31,7 @@ data Begin = Begin [Expr]
 data If = If Expr Expr (Maybe Expr)
   deriving (Show, Eq)
 
-data Cond = Cond [(Expr, [Expr])]
+data Cond = Cond [(Expr, [Expr])] [(Expr, [Expr])]
   deriving (Show, Eq)
 
 data And = And [Expr]

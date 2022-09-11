@@ -117,9 +117,19 @@ pletrec = parens $ do
   _ <- C.space *> C.string "letrec"
   undefined
 
+pbindings :: Parser [(A.Ident, A.Expr)]
+pbindings = many $ parens $ do
+  ident <- pidentifier 
+  expr <- pexpr 
+  pure $ (ident, expr)
+
+
 prec :: Parser A.Rec
 prec = parens $ do
   _ <- C.space *> C.string "rec"
+  ident <- pidentifier
+  mappings <- pbindings
+  exprs <- pexprs
   undefined
 
 pbegin :: Parser A.Begin
@@ -136,11 +146,10 @@ pif = parens $ do
   maybeE <- optional (C.space *> pexpr)
   pure $ A.If e1 e2 maybeE
 
-pcond :: Parser A.Cond
+{- pcond :: Parser A.Cond
 pcond = parens $ do
   _ <- C.space *> C.string "cond"
-  es <- many $ parens (pAsTuples (C.space *> pexpr) (many $ C.space *> pexpr))
-  pure $ A.Cond es
+  pure $ A.Cond  -}
 
 pand :: Parser A.And
 pand = parens $ do
@@ -173,3 +182,9 @@ pexpr =
     <|> (A.ELet <$> plet)
     <|> (A.ERec <$> prec)
     <|> (A.EBegin <$> pbegin)
+
+pexprs :: Parser [A.Expr]
+pexprs = do 
+  e <- pexpr 
+  es <- many $ pexpr 
+  pure $ [e] ++ es
