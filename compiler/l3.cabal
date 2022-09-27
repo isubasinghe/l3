@@ -26,10 +26,9 @@ source-repository head
 library
   exposed-modules:
       CoreL3.AST
+      CoreL3.Desugar
+      CoreL3.Parser
       CPS.AST
-      Frontend.AST
-      Frontend.Desugar
-      Frontend.Parser
   other-modules:
       Paths_l3
   hs-source-dirs:
