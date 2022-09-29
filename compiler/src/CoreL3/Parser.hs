@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Frontend.Parser where
+module CoreL3.Parser where
 
+import qualified CoreL3.AST as A
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Void (Void)
-import qualified Frontend.AST as A
 import Text.Megaparsec
 import qualified Text.Megaparsec.Char as C
 import qualified Text.Megaparsec.Char.Lexer as L
@@ -118,11 +118,11 @@ pletrec = parens $ do
   undefined
 
 pbindings :: Parser [(A.Ident, A.Expr)]
-pbindings = many $ parens $ do
-  ident <- pidentifier 
-  expr <- pexpr 
-  pure $ (ident, expr)
-
+pbindings = many $
+  parens $ do
+    ident <- pidentifier
+    expr <- pexpr
+    pure $ (ident, expr)
 
 prec :: Parser A.Rec
 prec = parens $ do
@@ -184,7 +184,7 @@ pexpr =
     <|> (A.EBegin <$> pbegin)
 
 pexprs :: Parser [A.Expr]
-pexprs = do 
-  e <- pexpr 
-  es <- many $ pexpr 
+pexprs = do
+  e <- pexpr
+  es <- many $ pexpr
   pure $ [e] ++ es
