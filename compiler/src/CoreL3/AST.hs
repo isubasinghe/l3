@@ -4,9 +4,13 @@ import Data.Text (Text)
 
 type Ident = Text
 
-data Program 
-  = PDefinition Definition Expr
-  | PExpr Expr Expr
+
+data Program = Program ProgramItems Expr
+
+data ProgramItem
+  = PDefinition Definition
+  | PExpr Expr
+type ProgramItems = [ProgramItem]
 
 data Definition
   = Def Ident Expr

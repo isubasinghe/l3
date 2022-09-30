@@ -33,12 +33,6 @@ atLeast n p = do
   xs' <- many p
   pure $ xs ++ xs'
 
-pAsTuples :: Parser a -> Parser [a] -> Parser (a, [a])
-pAsTuples p1 p2 = do
-  out1 <- p1
-  out2 <- p2
-  pure $ (out1, out2)
-
 rws :: [Text]
 rws =
   [ "defrec",
@@ -90,17 +84,23 @@ pstrlit = do
 pdef :: Parser A.Definition
 pdef = parens $ do
   _ <- C.space *> C.string "def"
-  undefined
+  ident <- C.space *> pidentifier
+  e <- C.space *> pexpr
+  pure $ A.Def ident e
 
 pdefrec :: Parser A.Definition
 pdefrec = parens $ do
   _ <- C.space *> C.string "defrec"
-  undefined
+  ident <- C.space *> pidentifier
+  fn <- C.space *> pfun
+  pure $ A.DefRec ident fn
 
 pfun :: Parser A.Fun
 pfun = parens $ do
   _ <- C.space *> C.string "fun"
-  undefined
+  is <- C.space *> (parens $ many pidentifier)
+  es <- C.space *> pexprs
+  pure $ A.Fun is es
 
 plet :: Parser A.Let
 plet = parens $ do
@@ -188,3 +188,14 @@ pexprs = do
   e <- pexpr
   es <- many $ pexpr
   pure $ [e] ++ es
+
+pprogramitem :: Parser A.ProgramItem
+pprogramitem =
+  (A.PDefinition <$> (pdefrec <|> pdef))
+    <|> (A.PExpr <$> pexpr)
+
+pprogram :: Parser A.Program
+pprogram = do
+  is <- many pprogramitem
+  e <- pexpr
+  pure $ A.Program is e
