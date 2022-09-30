@@ -33,6 +33,12 @@ atLeast n p = do
   xs' <- many p
   pure $ xs ++ xs'
 
+pjoin :: Parser a -> Parser b -> Parser (a, b)
+pjoin p1 p2 = do 
+  out1 <- p1 
+  out2 <- p2 
+  pure $ (out1, out2)
+
 rws :: [Text]
 rws =
   [ "defrec",
@@ -105,7 +111,9 @@ pfun = parens $ do
 plet :: Parser A.Let
 plet = parens $ do
   _ <- C.space *> C.string "let"
-  undefined
+  bs <- parens $ many (pjoin pidentifier (C.space *> pexpr))
+  es <- C.space *> pexprs
+  pure $ A.Let bs es 
 
 pletstar :: Parser A.Let
 pletstar = parens $ do
