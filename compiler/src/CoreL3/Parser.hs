@@ -87,6 +87,17 @@ pstrlit = do
   -- Hijack haskell's string lexer so we don't have to deal with escaping
   pure $ T.pack (read ('"' : T.unpack content ++ "\""))
 
+pprogramitem :: Parser A.ProgramItem
+pprogramitem =
+  (A.PDefinition <$> (pdefrec <|> pdef))
+    <|> (A.PExpr <$> pexpr)
+
+pprogram :: Parser A.Program
+pprogram = do
+  is <- many pprogramitem
+  e <- pexpr
+  pure $ A.Program is e
+
 pdef :: Parser A.Definition
 pdef = parens $ do
   _ <- C.space *> C.string "def"
@@ -135,7 +146,7 @@ prec = parens $ do
   ident <- C.space *> pidentifier
   mappings <- parens $ many (parens $ pjoin pidentifier (C.space *> pexpr))
   exprs <- C.space *> pexprs
-  pure $ A.Rec ident mappings exprs 
+  pure $ A.Rec ident mappings exprs
 
 pbegin :: Parser A.Begin
 pbegin = parens $ do
@@ -193,14 +204,3 @@ pexprs = do
   e <- pexpr
   es <- many $ pexpr
   pure $ [e] ++ es
-
-pprogramitem :: Parser A.ProgramItem
-pprogramitem =
-  (A.PDefinition <$> (pdefrec <|> pdef))
-    <|> (A.PExpr <$> pexpr)
-
-pprogram :: Parser A.Program
-pprogram = do
-  is <- many pprogramitem
-  e <- pexpr
-  pure $ A.Program is e
