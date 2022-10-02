@@ -6,9 +6,11 @@ import qualified CoreL3.AST as A
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Void (Void)
+import Control.Monad(void)
 import Text.Megaparsec
 import qualified Text.Megaparsec.Char as C
 import qualified Text.Megaparsec.Char.Lexer as L
+import Text.Megaparsec.Debug (dbg', dbg)
 
 type Parser = Parsec Void Text
 
@@ -98,21 +100,34 @@ pidentifier = (lexeme . try) (p >>= check)
         else pure x
 
 punit :: Parser ()
-punit = (const ()) <$> C.string "()"
+punit = C.space *> do (const ()) <$> C.string "()"
 
 pbool :: Parser Bool
 pbool =
-  (const True) <$> C.string "#t"
-    <|> (const False) <$> C.string "#f"
+  C.space *> do
+    (const True) <$> C.string "#t"
+      <|> (const False) <$> C.string "#f"
 
 pint :: Parser Int
-pint = lexeme L.decimal
+pint =
+  C.space *> do
+    isNeg <- optional $ C.string "-"
+    dec <- lexeme L.decimal
+    case isNeg of
+      Just _ -> pure $ -1 * dec
+      _ -> pure $ dec
 
 pfloat :: Parser Double
 pfloat = lexeme L.float
 
 pcharlit :: Parser Char
-pcharlit = lexeme L.charLiteral
+pcharlit = (lexeme . try) (p >>= check) 
+  where 
+    p = C.space *> do lexeme L.charLiteral
+    check :: Char -> Parser Char
+    check x = if or [x == '(', x == ')'] 
+                 then fail $ "parens " <> show x <> " cannot be used as char literal without escaping"
+                 else pure x
 
 pdquotes :: Parser a -> Parser a
 pdquotes = between (single '"') (single '"')
@@ -205,7 +220,7 @@ pcond = parens $ do
   pure $ A.Cond es
 
 pand :: Parser A.And
-pand = parens $ do
+pand = parens $ do 
   _ <- C.space *> C.string "and"
   es <- C.space *> (atLeast 2 (C.space *> pexpr))
   pure $ A.And es
