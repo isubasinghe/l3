@@ -37,6 +37,10 @@ main = hspec $
 
     describe "should parse expressions" $ do
       it "parses and operations" $
-        parse pand "" `shouldSucceedOn` "(and 123 123)"
+        parse pexpr "" `shouldSucceedOn` "(and 123 123)"
       it "parses and operations where args > 0" $ do
-        parse pand "" `shouldSucceedOn` "(and #f #t #t)"
+        parse pexpr "" `shouldSucceedOn` "(and #f #t #t)"
+
+    describe "should parse nested expressions" $ do
+      it "parses a double nested expression" $ 
+        parse pexpr "" `shouldSucceedOn` "(and #t (and #t #f))"
