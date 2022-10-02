@@ -94,8 +94,8 @@ pprogramitem =
 
 pprogram :: Parser A.Program
 pprogram = do
-  is <- many pprogramitem
-  e <- pexpr
+  is <- many $ C.space *> pprogramitem
+  e <- C.space *> pexpr
   pure $ A.Program is e
 
 pdef :: Parser A.Definition
@@ -129,14 +129,14 @@ plet = parens $ do
 pletstar :: Parser A.Let
 pletstar = parens $ do
   _ <- C.space *> C.string "let*"
-  bs <- parens $ many (parens $ pjoin pidentifier (C.space *> pexpr))
+  bs <- C.space *> (parens $ many (parens $ pjoin pidentifier (C.space *> pexpr)))
   es <- C.space *> pexprs
   pure $ A.LetStar bs es
 
 pletrec :: Parser A.Let
 pletrec = parens $ do
   _ <- C.space *> C.string "letrec"
-  bs <- parens $ many (parens $ pjoin pidentifier (C.space *> pfun))
+  bs <- C.space *> (parens $ many (parens $ pjoin pidentifier (C.space *> pfun)))
   es <- C.space *> pexprs
   pure $ A.LetRec bs es
 
@@ -144,14 +144,14 @@ prec :: Parser A.Rec
 prec = parens $ do
   _ <- C.space *> C.string "rec"
   ident <- C.space *> pidentifier
-  mappings <- parens $ many (parens $ pjoin pidentifier (C.space *> pexpr))
+  mappings <- C.space *> (parens $ many (parens $ pjoin pidentifier (C.space *> pexpr)))
   exprs <- C.space *> pexprs
   pure $ A.Rec ident mappings exprs
 
 pbegin :: Parser A.Begin
 pbegin = parens $ do
   _ <- C.space *> C.string "begin"
-  es <- many (C.space *> pexpr)
+  es <- C.space *> many (C.space *> pexpr)
   pure $ A.Begin es
 
 pif :: Parser A.If
@@ -162,21 +162,22 @@ pif = parens $ do
   maybeE <- optional (C.space *> pexpr)
   pure $ A.If e1 e2 maybeE
 
-{- pcond :: Parser A.Cond
+pcond :: Parser A.Cond
 pcond = parens $ do
   _ <- C.space *> C.string "cond"
-  pure $ A.Cond  -}
+  es <- some (C.space *> parens ((\s -> (head s, tail s)) <$> (atLeast 2 (C.space *> pexpr))))
+  pure $ A.Cond es
 
 pand :: Parser A.And
 pand = parens $ do
   _ <- C.space *> C.string "and"
-  es <- atLeast 2 (C.space *> pexpr)
+  es <- C.space *> (atLeast 2 (C.space *> pexpr))
   pure $ A.And es
 
 por :: Parser A.Or
 por = parens $ do
   _ <- C.space *> C.string "or"
-  es <- atLeast 2 (C.space *> pexpr)
+  es <- C.space *> (atLeast 2 (C.space *> pexpr))
   pure $ A.Or es
 
 pnot :: Parser A.Not
