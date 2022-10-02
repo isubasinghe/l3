@@ -2,15 +2,15 @@
 
 module CoreL3.Parser where
 
+import Control.Monad (void)
 import qualified CoreL3.AST as A
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Void (Void)
-import Control.Monad(void)
 import Text.Megaparsec
 import qualified Text.Megaparsec.Char as C
 import qualified Text.Megaparsec.Char.Lexer as L
-import Text.Megaparsec.Debug (dbg', dbg)
+import Text.Megaparsec.Debug (dbg, dbg')
 
 type Parser = Parsec Void Text
 
@@ -121,13 +121,14 @@ pfloat :: Parser Double
 pfloat = lexeme L.float
 
 pcharlit :: Parser Char
-pcharlit = (lexeme . try) (p >>= check) 
-  where 
+pcharlit = (lexeme . try) (p >>= check)
+  where
     p = C.space *> do lexeme L.charLiteral
     check :: Char -> Parser Char
-    check x = if or [x == '(', x == ')'] 
-                 then fail $ "parens " <> show x <> " cannot be used as char literal without escaping"
-                 else pure x
+    check x =
+      if or [x == '(', x == ')']
+        then fail $ "parens " <> show x <> " cannot be used as char literal without escaping"
+        else pure x
 
 pdquotes :: Parser a -> Parser a
 pdquotes = between (single '"') (single '"')
@@ -220,7 +221,7 @@ pcond = parens $ do
   pure $ A.Cond es
 
 pand :: Parser A.And
-pand = parens $ do 
+pand = parens $ do
   _ <- C.space *> C.string "and"
   es <- C.space *> (atLeast 2 (C.space *> pexpr))
   pure $ A.And es
@@ -244,23 +245,23 @@ papp = parens $ do
 
 pexpr :: Parser A.Expr
 pexpr =
-  (A.EFun <$> pfun)
-    <|> (A.ELet <$> pletstar)
-    <|> (A.ELet <$> pletrec)
-    <|> (A.ELet <$> plet)
-    <|> (A.ERec <$> prec)
-    <|> (A.EBegin <$> pbegin)
-    <|> (A.EIf <$> pif)
-    <|> (A.ECond <$> pcond)
-    <|> (A.EAnd <$> pand)
-    <|> (A.EOr <$> por)
-    <|> (A.ENot <$> pnot)
-    <|> (A.EApp <$> papp)
-    <|> (A.EIdent <$> pidentifier)
-    <|> (A.ENum <$> pint)
-    <|> (A.EStr <$> pstrlit)
-    <|> (A.EChr <$> pcharlit)
-    <|> (A.EBool <$> pbool)
+  try (A.EFun <$> pfun)
+    <|> try (A.ELet <$> pletstar)
+    <|> try (A.ELet <$> pletrec)
+    <|> try (A.ELet <$> plet)
+    <|> try (A.ERec <$> prec)
+    <|> try (A.EBegin <$> pbegin)
+    <|> try (A.EIf <$> pif)
+    <|> try (A.ECond <$> pcond)
+    <|> try (A.EAnd <$> pand)
+    <|> try (A.EOr <$> por)
+    <|> try (A.ENot <$> pnot)
+    <|> try (A.EApp <$> papp)
+    <|> try (A.EIdent <$> pidentifier)
+    <|> try (A.ENum <$> pint)
+    <|> try (A.EStr <$> pstrlit)
+    <|> try (A.EChr <$> pcharlit)
+    <|> try (A.EBool <$> pbool)
     <|> ((const A.EUnit) <$> punit)
 
 pexprs :: Parser [A.Expr]
