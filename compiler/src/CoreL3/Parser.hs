@@ -27,6 +27,9 @@ symbol = L.symbol sc
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
 
+primparens :: Parser a -> Parser a
+primparens = between (symbol "(@") (symbol ")")
+
 atLeast :: Int -> Parser a -> Parser [a]
 atLeast n p = do
   xs <- count n p
@@ -54,8 +57,33 @@ rws =
     "cond",
     "and",
     "or",
-    "not"
+    "not",
+    "+",
+    "-",
+    "*",
+    "xor",
+    "shl",
+    "shr",
+    "/",
+    "%",
+    "<",
+    "<=",
+    "=",
+    "id"
   ]
+
+pprimnames :: Parser A.PrimOp
+pprimnames =
+  (const A.Plus) <$> C.string "+"
+    <|> (const A.Xor) <$> C.string "xor"
+    <|> (const A.Shl) <$> C.string "shl"
+    <|> (const A.Shr) <$> C.string "shr"
+    <|> (const A.Div) <$> C.string "/"
+    <|> (const A.Mod) <$> C.string "%"
+    <|> (const A.Less) <$> C.string "<"
+    <|> (const A.Leq) <$> C.string "<="
+    <|> (const A.Eq) <$> C.string "="
+    <|> (const A.Id) <$> C.string "id"
 
 pidentifier :: Parser Text
 pidentifier = (lexeme . try) (p >>= check)
@@ -68,6 +96,14 @@ pidentifier = (lexeme . try) (p >>= check)
       if x `elem` rws
         then fail $ "keyword " <> show x <> " cannot be an identifier"
         else pure x
+
+punit :: Parser ()
+punit = (const ()) <$> C.string "()"
+
+pbool :: Parser Bool
+pbool =
+  (const True) <$> C.string "#t"
+    <|> (const False) <$> C.string "#f"
 
 pint :: Parser Int
 pint = lexeme L.decimal
@@ -199,6 +235,18 @@ pexpr =
     <|> (A.ELet <$> plet)
     <|> (A.ERec <$> prec)
     <|> (A.EBegin <$> pbegin)
+    <|> (A.EIf <$> pif)
+    <|> (A.ECond <$> pcond)
+    <|> (A.EAnd <$> pand)
+    <|> (A.EOr <$> por)
+    <|> (A.ENot <$> pnot)
+    <|> (A.EApp <$> papp)
+    <|> (A.EIdent <$> pidentifier)
+    <|> (A.ENum <$> pint)
+    <|> (A.EStr <$> pstrlit)
+    <|> (A.EChr <$> pcharlit)
+    <|> (A.EBool <$> pbool)
+    <|> ((const A.EUnit) <$> punit)
 
 pexprs :: Parser [A.Expr]
 pexprs = do

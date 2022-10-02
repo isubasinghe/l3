@@ -4,12 +4,14 @@ import Data.Text (Text)
 
 type Ident = Text
 
-
 data Program = Program ProgramItems Expr
+  deriving (Show, Eq)
 
 data ProgramItem
   = PDefinition Definition
   | PExpr Expr
+  deriving (Show, Eq)
+
 type ProgramItems = [ProgramItem]
 
 data Definition
@@ -20,7 +22,7 @@ data Definition
 data Fun = Fun [Ident] [Expr]
   deriving (Show, Eq)
 
-data Let 
+data Let
   = Let [(Ident, Expr)] [Expr]
   | LetStar [(Ident, Expr)] [Expr]
   | LetRec [(Ident, Fun)] [Expr]
@@ -48,6 +50,20 @@ data Not = Not Expr
   deriving (Show, Eq)
 
 data App = App [Expr]
+  deriving (Show, Eq)
+
+data PrimOp
+  = Plus
+  | Minus
+  | Xor
+  | Shl
+  | Shr
+  | Div
+  | Mod
+  | Less
+  | Leq
+  | Eq
+  | Id
   deriving (Show, Eq)
 
 data Expr
