@@ -25,6 +25,8 @@ dependencies:
   - megaparsec == 9.2.1
   - text ==1.2.5.0
   - optparse-applicative ==0.17.0.0
+  - hspec-megaparsec ==2.2.0
+  - hspec ==2.10.0.1
 
 library:
   source-dirs: src

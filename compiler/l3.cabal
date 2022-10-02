@@ -36,6 +36,8 @@ library
   build-depends:
       base >=4.7 && <5
     , diagnose ==2.0.0
+    , hspec ==2.10.0.1
+    , hspec-megaparsec ==2.2.0
     , megaparsec ==9.2.1
     , optparse-applicative ==0.17.0.0
     , text ==1.2.5.0
@@ -52,6 +54,8 @@ executable l3-exe
   build-depends:
       base >=4.7 && <5
     , diagnose ==2.0.0
+    , hspec ==2.10.0.1
+    , hspec-megaparsec ==2.2.0
     , l3
     , megaparsec ==9.2.1
     , optparse-applicative ==0.17.0.0
@@ -69,6 +73,8 @@ test-suite l3-test
   build-depends:
       base >=4.7 && <5
     , diagnose ==2.0.0
+    , hspec ==2.10.0.1
+    , hspec-megaparsec ==2.2.0
     , l3
     , megaparsec ==9.2.1
     , optparse-applicative ==0.17.0.0
