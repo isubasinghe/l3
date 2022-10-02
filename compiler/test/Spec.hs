@@ -42,5 +42,11 @@ main = hspec $
         parse pexpr "" `shouldSucceedOn` "(and #f #t #t)"
 
     describe "should parse nested expressions" $ do
-      it "parses a double nested expression" $ 
+      it "parses a double nested expression" $
         parse pexpr "" `shouldSucceedOn` "(and #t (and #t #f))"
+
+    describe "it should parse function declarations" $ do
+      it "parses a zero arg fn decl" $
+        parse pfun "" `shouldSucceedOn` "(fun () (and #t #t))"
+      it "parses a 1 arg fn decl" $
+        parse pfun "" `shouldSucceedOn` "(fun (x) (and #t #t))"
