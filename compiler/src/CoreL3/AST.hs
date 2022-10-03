@@ -66,6 +66,9 @@ data PrimOp
   | Id
   deriving (Show, Eq)
 
+data Prim = Prim PrimOp [Expr]
+  deriving (Show, Eq)
+
 data Expr
   = EFun Fun
   | ELet Let
@@ -77,6 +80,7 @@ data Expr
   | EOr Or
   | ENot Not
   | EApp App
+  | EPrim Prim
   | EIdent Ident
   | ENum Int
   | EStr Text
