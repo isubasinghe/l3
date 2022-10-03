@@ -27,6 +27,8 @@ dependencies:
   - optparse-applicative ==0.17.0.0
   - hspec-megaparsec ==2.2.0
   - hspec ==2.10.0.1
+  - containers == 0.6.5.1
+  - mtl == 2.2.2
 
 library:
   source-dirs: src
