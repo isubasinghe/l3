@@ -74,9 +74,10 @@ rws =
     "id"
   ]
 
-pprimnames :: Parser A.PrimOp
-pprimnames =
+pprimop :: Parser A.PrimOp
+pprimop =
   (const A.Plus) <$> C.string "+"
+    <|> (const A.Minus) <$> C.string "-"
     <|> (const A.Xor) <$> C.string "xor"
     <|> (const A.Shl) <$> C.string "shl"
     <|> (const A.Shr) <$> C.string "shr"
@@ -86,6 +87,12 @@ pprimnames =
     <|> (const A.Leq) <$> C.string "<="
     <|> (const A.Eq) <$> C.string "="
     <|> (const A.Id) <$> C.string "id"
+
+pprim :: Parser A.Prim
+pprim = primparens $ do
+  op <- C.space *> pprimop
+  e <- many (C.space *> pexpr)
+  pure $ A.Prim op e
 
 pidentifier :: Parser Text
 pidentifier = (lexeme . try) (p >>= check)
