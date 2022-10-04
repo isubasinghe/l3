@@ -1,7 +1,7 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 module CoreL3.Desugar where
 
@@ -13,24 +13,16 @@ import CoreL3.AST
 -- import qualified Data.Map.Strict as M
 import Data.Text (Text)
 
-data Stack a
-  = Nil
-  | Cons a (Stack a)
-
-data DesugarError = ReservedVariablePattern (Maybe Text)
+data DesugarError
+  = ReservedVariablePattern (Maybe Text)
   | ExpectedExpression
+  | InvalidState Text
   deriving (Show, Eq)
 
-type DesugarState = ExceptT DesugarError (State (Stack Int))
+type DesugarState = ExceptT DesugarError (State Int)
 
 class Desugar a b where
   desugar :: a -> DesugarState b
-
-pushNewFrame :: DesugarState ()
-pushNewFrame = undefined
-
-popFrame :: DesugarState (Stack Int)
-popFrame = undefined
 
 freshVariable :: DesugarState Text
 freshVariable = undefined
@@ -58,10 +50,24 @@ instance Desugar ProgramItems Expr where
       pure $ EBegin (Begin [e'])
 
 instance Desugar Expr Expr where
+  desugar (EBegin (Begin ([]))) = throwError $ InvalidState "Begin cannot contain an empty list"
+  desugar (EBegin (Begin ([e]))) = desugar e
   desugar (EBegin (Begin (e : es))) = do
     v <- freshVariable
-    e' <- desugar (EBegin (Begin es))
-    pure (ELet (Let [] [e']))
+    e' <- desugar e
+    es' <- desugar (EBegin (Begin es))
+    pure (ELet (Let [(v, e')] [es']))
+  desugar (ELet (Let bs es)) = do
+    bes <- desugar bs
+    es' <- desugar (EBegin (Begin es))
+    pure (ELet (Let bes [es']))
+  desugar a = pure a
+
+instance Desugar [(Ident, Expr)] [(Ident, Expr)] where
+  desugar bs = do
+    let (ns, es) = unzip bs
+    es' <- mapM desugar es
+    pure $ zip ns es'
 
 instance Desugar Fun Fun where
-  desugar e = undefined
+  desugar _ = undefined
