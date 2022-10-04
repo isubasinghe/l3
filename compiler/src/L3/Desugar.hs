@@ -3,11 +3,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
-module CoreL3.Desugar where
+module L3.Desugar where
 
 import Control.Monad.Except
 import Control.Monad.State.Strict
-import CoreL3.AST
+import L3.AST
 -- import qualified Data.DList as L
 -- import Data.List (isPrefixOf)
 -- import qualified Data.Map.Strict as M
@@ -57,10 +57,12 @@ instance Desugar Expr Expr where
     e' <- desugar e
     es' <- desugar (EBegin (Begin es))
     pure (ELet (Let [(v, e')] [es']))
+  -- 
   desugar (ELet (Let bs es)) = do
     bes <- desugar bs
     es' <- desugar (EBegin (Begin es))
     pure (ELet (Let bes [es']))
+  desugar (ELet (LetStar bs es)) = undefined
   desugar a = pure a
 
 instance Desugar [(Ident, Expr)] [(Ident, Expr)] where

@@ -26,10 +26,11 @@ source-repository head
 library
   exposed-modules:
       CoreL3.AST
-      CoreL3.Desugar
-      CoreL3.Parser
       CPS.AST
       Data.DList
+      L3.AST
+      L3.Desugar
+      L3.Parser
   other-modules:
       Paths_l3
   hs-source-dirs:

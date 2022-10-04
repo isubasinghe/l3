@@ -1,16 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module CoreL3.Parser where
+module L3.Parser where
 
-import Control.Monad (void)
-import qualified CoreL3.AST as A
+import qualified L3.AST as A
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Void (Void)
 import Text.Megaparsec
 import qualified Text.Megaparsec.Char as C
 import qualified Text.Megaparsec.Char.Lexer as L
-import Text.Megaparsec.Debug (dbg, dbg')
 
 type Parser = Parsec Void Text
 
