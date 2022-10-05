@@ -2,10 +2,10 @@
 
 module L3.Parser where
 
-import qualified L3.AST as A
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Void (Void)
+import qualified L3.AST as A
 import Text.Megaparsec
 import qualified Text.Megaparsec.Char as C
 import qualified Text.Megaparsec.Char.Lexer as L
@@ -144,10 +144,10 @@ pstrlit = do
   -- Hijack haskell's string lexer so we don't have to deal with escaping
   pure $ T.pack (read ('"' : T.unpack content ++ "\""))
 
-pprogramitem :: Parser A.ProgramItem
+pprogramitem :: Parser A.Expr
 pprogramitem =
-  (A.PDefinition <$> (pdefrec <|> pdef))
-    <|> (A.PExpr <$> pexpr)
+  (A.EDef) <$> (pdefrec <|> pdef)
+    <|> pexpr
 
 pprogram :: Parser A.Program
 pprogram = do

@@ -4,15 +4,8 @@ import Data.Text (Text)
 
 type Ident = Text
 
-data Program = Program ProgramItems Expr
+data Program = Program [Expr] Expr
   deriving (Show, Eq)
-
-data ProgramItem
-  = PDefinition Definition
-  | PExpr Expr
-  deriving (Show, Eq)
-
-type ProgramItems = [ProgramItem]
 
 data Definition
   = Def Ident Expr
@@ -71,6 +64,7 @@ data Prim = Prim PrimOp [Expr]
 
 data Expr
   = EFun Fun
+  | EDef Definition
   | ELet Let
   | ERec Rec
   | EBegin Begin

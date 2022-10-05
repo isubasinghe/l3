@@ -4,9 +4,13 @@ import Data.Text (Text)
 
 type Ident = Text
 
+data Fun = Fun [Ident] [Expr]
+  deriving (Show, Eq)
+
 data Let
   = Let [(Ident, Expr)] [Expr]
   | LetStar [(Ident, Expr)] [Expr]
+  | LetRec [(Ident, Fun)] [Expr]
   deriving (Show, Eq)
 
 data If = If Expr Expr (Maybe Expr)
@@ -33,7 +37,8 @@ data Prim = Prim PrimOp [Expr]
   deriving (Show, Eq)
 
 data Expr
-  = ELet Let
+  = EFun Fun
+  | ELet Let
   | EIf If
   | EApp App
   | EPrim Prim

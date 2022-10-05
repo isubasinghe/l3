@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       CoreL3.AST
+      CoreL3.Lowering
       CPS.AST
       Data.DList
       L3.AST
