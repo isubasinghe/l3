@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -33,17 +34,17 @@ instance Desugar Program CL3.Expr where
 
 instance Desugar ([Expr], Expr) CL3.Expr where
   desugar ([], e) = desugar e
-  desugar ([p], e) = undefined
   desugar ((p : ps), e) = case p of
     EDef (Def dn de) -> desugarDef dn de CL3.Let
     EDef (DefRec dn de) -> desugarDef dn de CL3.LetRec
-    other -> undefined
+    other -> do 
+      ps' <- desugar (ps, e)
+      -- desugar ((EBegin (Begin [])), e)
     where
-      desugarDef dn de fn = do 
-        de' <- desugar de 
-        ps' <- desugar (ps,e)
+      desugarDef dn de fn = do
+        de' <- desugar de
+        ps' <- desugar (ps, e)
         pure (CL3.ELet (fn [(dn, de')] [ps']))
-
 
 instance Desugar Expr CL3.Expr where
   desugar (EBegin (Begin ([]))) = throwError $ InvalidState "Begin cannot contain an empty list"
