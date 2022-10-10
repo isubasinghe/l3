@@ -64,6 +64,7 @@ data Prim = Prim PrimOp [Expr]
 
 data Expr
   = EFun Fun
+  | EProg Program
   | EDef Definition
   | ELet Let
   | ERec Rec

@@ -8,7 +8,6 @@ module L3.Desugar where
 
 import Control.Monad.Except
 import Control.Monad.State.Strict
-import qualified CoreL3.AST as CL3
 -- import qualified Data.DList as L
 -- import Data.List (isPrefixOf)
 -- import qualified Data.Map.Strict as M
@@ -19,6 +18,7 @@ data DesugarError
   = ReservedVariablePattern (Maybe Text)
   | ExpectedExpression
   | InvalidState Text
+  | InvalidCall Text
   deriving (Show, Eq)
 
 type DesugarState = ExceptT DesugarError (State Int)
@@ -29,47 +29,35 @@ class Desugar a b where
 freshVariable :: DesugarState Text
 freshVariable = undefined
 
-instance Desugar Program CL3.Expr where
-  desugar (Program p e) = desugar (p, e)
-
-instance Desugar ([Expr], Expr) CL3.Expr where
-  desugar ([], e) = desugar e
-  desugar ((p : ps), e) = case p of
-    EDef (Def dn de) -> desugarDef dn de CL3.Let
-    EDef (DefRec dn de) -> desugarDef dn de CL3.LetRec
-    other -> do 
-      ps' <- desugar (ps, e)
-      -- desugar ((EBegin (Begin [])), e)
-    where
-      desugarDef dn de fn = do
-        de' <- desugar de
-        ps' <- desugar (ps, e)
-        pure (CL3.ELet (fn [(dn, de')] [ps']))
-
-instance Desugar Expr CL3.Expr where
-  desugar (EBegin (Begin ([]))) = throwError $ InvalidState "Begin cannot contain an empty list"
-  desugar (EBegin (Begin ([e]))) = desugar e
-  desugar (EBegin (Begin (e : es))) = do
-    v <- freshVariable
-    e' <- desugar e
-    es' <- desugar (EBegin (Begin es))
-    pure (CL3.ELet (CL3.Let [(v, e')] [es']))
-  --
-  desugar (ELet (Let bs es)) = do
-    bes <- desugar bs
-    es' <- desugar (EBegin (Begin es))
-    pure (CL3.ELet (CL3.Let bes [es']))
-  desugar (ELet (LetStar bs es)) = undefined
-  desugar a = undefined
-
 instance Desugar Expr Expr where
-  desugar a = undefined
+  desugar (EProg (Program es e)) = case es of
+    [] -> desugar e
+    (ne : es') -> case ne of
+      (EDef (Def n ne')) -> do
+        ne'' <- desugar ne'
+        let bs = [(n, ne'')]
+        es'' <- desugar (EProg (Program es' e))
+        pure $ ELet (Let bs [es''])
+      (EDef (DefRec n ne')) -> do
+        ne'' <- desugar ne'
+        es'' <- desugar (EProg (Program es' e))
+        pure $ ELet (LetRec [(n, ne'')] [es''])
+      _ -> desugar (EBegin (Begin [ne, (EProg (Program es' e))]))
+  desugar (EBegin (Begin [])) = throwError $ InvalidCall "Begin expressions cannot be empty"
+  desugar (EBegin (Begin [b])) = desugar b
+  desugar (EBegin (Begin (b : bs))) = do
+    b' <- desugar b
+    t <- freshVariable
+    bs' <- desugar (EBegin (Begin bs))
+    pure $ ELet (Let [(t, b')] [bs'])
+  desugar (ELet (Let bs es)) = do
+    bs' <- mapM (\(n, e) -> (\e' -> (n, e')) <$> desugar e) bs
+    es' <- desugar (EBegin (Begin es))
+    pure $ ELet (Let bs' [es'])
+  desugar (ELet (LetStar [] es)) = desugar (EBegin (Begin es))
+  desugar (ELet (LetStar (b : bs) es)) = desugar (ELet (Let [b] [(ELet (LetStar bs es))]))
+  desugar (ELet (LetRec bs es)) = undefined
+  desugar e = pure e
 
-instance Desugar [(Ident, Expr)] [(CL3.Ident, CL3.Expr)] where
-  desugar bs = do
-    let (ns, es) = unzip bs
-    es' <- mapM desugar es
-    pure $ zip ns es'
-
-instance Desugar Fun CL3.Fun where
-  desugar _ = undefined
+instance Desugar Fun Fun where
+  desugar e = undefined
