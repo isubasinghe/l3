@@ -56,7 +56,9 @@ instance Desugar Expr Expr where
     pure $ ELet (Let bs' [es'])
   desugar (ELet (LetStar [] es)) = desugar (EBegin (Begin es))
   desugar (ELet (LetStar (b : bs) es)) = desugar (ELet (Let [b] [(ELet (LetStar bs es))]))
-  desugar (ELet (LetRec bs es)) = undefined
+  desugar (ELet (LetRec bs es)) = do
+    bs' <- mapM (\(n, Fun as sa) -> undefined) bs
+    undefined
   desugar e = pure e
 
 instance Desugar Fun Fun where
